@@ -3,8 +3,6 @@ import { searchGithub, searchGithubUser } from '../api/API';
 import { Candidate } from '../interfaces/Candidate.interface';
 
 const CandidateSearch = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(false);
   const [currentCandidate, setCurrentCandidate] = useState<Candidate>({
     name: '',
     login: '',
@@ -14,15 +12,12 @@ const CandidateSearch = () => {
     company: '',
     bio: ''
   });
-  const [SavedCandidates, setSavedCandidates] = useState<any[]>([]);
 
   useEffect(() => {
     fetchCandidate()
-  })
+  }, []);
 
   const fetchCandidate = async () => {
-    setLoading(true);
-    setError(false);
     try {
       const users = await searchGithub();
       if (users.length > 0) {
@@ -31,25 +26,43 @@ const CandidateSearch = () => {
         setCurrentCandidate(candidateInfo);
       } else {
         console.log('No users found');
-        setError(true);
       }
     } catch (error) {
-      console.log('Error fetching candidate:', error);
-      setError(true);
-    } finally {
-      setLoading(false);
-    };
+      console.error('Error fetching candidate:', error);
+    }
   }
 
   const saveCandidate = () => {
-    const candidate = currentCandidate;
-    const updatedCandidates = [...SavedCandidates, candidate];
-    setSavedCandidates(updatedCandidates);
-    localStorage.setItem('savedCandidates', JSON.stringify(updatedCandidates));
-    console.log('Candidate saved:');
+    if (currentCandidate) {
+      const savedCandidates = localStorage.getItem('savedCandidates');
+      if (savedCandidates) {
+        const storedCandidates = JSON.parse(savedCandidates) as Candidate[];
+        storedCandidates.push(currentCandidate);
+        localStorage.setItem('savedCandidates', JSON.stringify(storedCandidates));
+      } else {
+        localStorage.setItem('savedCandidates', JSON.stringify([currentCandidate]));
+      } 
+      fetchCandidate();
+    }
   };
 
-  return <h1>CandidateSearch</h1>;
+  return (
+  <div>
+    <h1>Candidate Search</h1>
+    <div>
+      <img src={currentCandidate.avatar_url} alt="Candidate avatar" />
+      <h2>Name: {currentCandidate.name}</h2>
+      <p><strong>{currentCandidate.login}</strong></p>
+      <p>Email: {currentCandidate.email}</p>
+      <p>Location: {currentCandidate.location}</p>
+      <p>Company: {currentCandidate.company}</p>
+      <p>Bio: {currentCandidate.bio}</p>
+      <div className="buttons">
+        <button onClick={saveCandidate}>Save Candidate</button>
+        <button onClick={fetchCandidate}>Next Candidate</button>
+      </div>
+    </div>
+  </div>);
 };
 
 export default CandidateSearch;
