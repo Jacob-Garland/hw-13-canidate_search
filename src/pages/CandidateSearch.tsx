@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { searchGithub, searchGithubUser } from '../api/API';
 import { Candidate } from '../interfaces/Candidate.interface';
+import ErrorPage from './ErrorPage';
 
 const CandidateSearch = () => {
   const [currentCandidate, setCurrentCandidate] = useState<Candidate>({
@@ -28,38 +29,31 @@ const CandidateSearch = () => {
         console.log('No users found');
       }
     } catch (error) {
-      console.error('Error fetching candidate:', error);
+      return ErrorPage;
+      // console.error('Error fetching candidate:', error);
     }
   }
 
-  const saveCandidate = () => {
-    if (currentCandidate) {
-      const savedCandidates = localStorage.getItem('savedCandidates');
-      if (savedCandidates) {
-        const storedCandidates = JSON.parse(savedCandidates) as Candidate[];
-        storedCandidates.push(currentCandidate);
-        localStorage.setItem('savedCandidates', JSON.stringify(storedCandidates));
-      } else {
-        localStorage.setItem('savedCandidates', JSON.stringify([currentCandidate]));
-      } 
-      fetchCandidate();
-    }
-  };
+  const saveCandidate = (currentCandidate: Candidate) => {
+    const savedCandidates = JSON.parse(localStorage.getItem('savedCandidates') || '[]');
+    localStorage.setItem('savedCandidates', JSON.stringify([...savedCandidates, currentCandidate])); 
+    fetchCandidate();
+  }
 
   return (
   <div>
     <h1>Candidate Search</h1>
     <div>
-      <img src={currentCandidate.avatar_url} alt="Candidate avatar" />
-      <h2>Name: {currentCandidate.name}</h2>
+      <h2><strong>Name: {currentCandidate.name}</strong></h2>
       <p><strong>{currentCandidate.login}</strong></p>
+      <img src={currentCandidate.avatar_url} alt="Candidate avatar" />
       <p>Email: {currentCandidate.email}</p>
       <p>Location: {currentCandidate.location}</p>
       <p>Company: {currentCandidate.company}</p>
       <p>Bio: {currentCandidate.bio}</p>
       <div className="buttons">
-        <button onClick={saveCandidate}>Save Candidate</button>
-        <button onClick={fetchCandidate}>Next Candidate</button>
+        <button onClick={() => saveCandidate(currentCandidate)}>Save</button>
+        <button onClick={fetchCandidate}>Next</button>
       </div>
     </div>
   </div>);
