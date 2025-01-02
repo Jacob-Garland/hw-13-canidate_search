@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
+
+# IMPORTANT: When using this app, make sure to create a .env file in this directory path of the project before adding your GitHub token to the .env file for the API.
 environment/.env
 
 # Editor directories and files
