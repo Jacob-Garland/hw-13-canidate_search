@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { searchGithub, searchGithubUser } from '../api/API';
 import { Candidate } from '../interfaces/Candidate.interface';
-import ErrorPage from './ErrorPage';
 
 const CandidateSearch = () => {
   const [currentCandidate, setCurrentCandidate] = useState<Candidate>({
@@ -29,8 +28,7 @@ const CandidateSearch = () => {
         console.log('No users found');
       }
     } catch (error) {
-      return ErrorPage;
-      // console.error('Error fetching candidate:', error);
+      console.error('Error fetching candidate:', error);
     }
   }
 

@@ -6,7 +6,7 @@ interface NavLinkProps {
   label: string;
 }
 
-// D.C. DONE? TODO: Add necessary code to display the navigation bar and link between the pages
+// TODO: Add necessary code to display the navigation bar and link between the pages
 const Nav: React.FC = () => {
   const navLinks: NavLinkProps[] = [
     { to: '/src/pages/CandidateSearch.tsx', label: 'Home' },
@@ -15,7 +15,7 @@ const Nav: React.FC = () => {
 
   return (
     <nav className="nav">
-      <ul className="nav-item">
+      <ul className='nav-item'>
         {navLinks.map((link, index) => (
           <li key={index}>
             <Link to={link.to}>{link.label}</Link>
