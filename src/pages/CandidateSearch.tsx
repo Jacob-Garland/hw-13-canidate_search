@@ -3,58 +3,90 @@ import { searchGithub, searchGithubUser } from '../api/API';
 import { Candidate } from '../interfaces/Candidate.interface';
 
 const CandidateSearch = () => {
-  const [currentCandidate, setCurrentCandidate] = useState<Candidate>({
-    name: '',
-    login: '',
-    avatar_url: '',
-    email: '',
-    location: '',
-    company: '',
-    bio: ''
-  });
+  const [currentCandidate, setCurrentCandidate] = useState<Candidate | null>(null);
+  const [candidatesList, setCandidatesList] = useState<string[]>([]);
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    fetchCandidate()
+    fetchCandidate();
   }, []);
 
   const fetchCandidate = async () => {
     try {
-      const users = await searchGithub();
-      if (users.length > 0) {
-        const randomUser = users[Math.floor(Math.random() * users.length)];
-        const candidateInfo = await searchGithubUser(randomUser.login) as Candidate;
-        setCurrentCandidate(candidateInfo);
-      } else {
-        console.log('No users found');
+      // Fetch basic candidates list (without details)
+      const results = await searchGithub();
+
+      // Extract usernames and store them in the state
+      const usernames = results.map((user: { login: string }) => user.login);
+      console.log("Usernames:", usernames);
+      setCandidatesList(usernames);
+
+      // Fetch details for the first username
+      if (usernames.length > 0) {
+        fetchCandidateDetails(usernames[0]);
       }
     } catch (error) {
-      console.error('Error fetching candidate:', error);
+      console.error("Error fetching candidates:", error);
+    }
+  };
+
+  const fetchCandidateDetails = async (username: string) => {
+    try {
+      const userData = await searchGithubUser(username);
+      console.log("Fetched user data:", userData);
+      setCurrentCandidate(userData || null);
+    } catch (error) {
+      console.error("Error fetching candidate details:", error);
+      setCurrentCandidate(null);
+    }
+  };
+
+  const fetchNextCandidate = () => {
+    const nextIndex = index + 1;
+    if (nextIndex < candidatesList.length) {
+      setIndex(nextIndex);
+      fetchCandidateDetails(candidatesList[nextIndex]);
+    } else {
+      setCurrentCandidate(null); // No more candidates available
+    }
+  };
+ 
+  const saveCandidate = () => {
+    if (currentCandidate) {
+      const storedCandidates = localStorage.getItem('storedCandidates');
+      if (storedCandidates) {
+        const candidates = JSON.parse(storedCandidates) as Candidate[];
+        candidates.push(currentCandidate);
+        localStorage.setItem('candidates', JSON.stringify(candidates));
+      } else {
+        localStorage.setItem('candidates', JSON.stringify([currentCandidate]));
+      }
+      fetchCandidate();
     }
   }
 
-  const saveCandidate = (currentCandidate: Candidate) => {
-    const savedCandidates = JSON.parse(localStorage.getItem('savedCandidates') || '[]');
-    localStorage.setItem('savedCandidates', JSON.stringify([...savedCandidates, currentCandidate])); 
-    fetchCandidate();
-  }
-
   return (
-  <div>
-    <h1>Candidate Search</h1>
-    <div>
-      <h2><strong>Name: {currentCandidate.name}</strong></h2>
-      <p><strong>{currentCandidate.login}</strong></p>
-      <img src={currentCandidate.avatar_url} alt="Candidate avatar" />
-      <p>Email: {currentCandidate.email}</p>
-      <p>Location: {currentCandidate.location}</p>
-      <p>Company: {currentCandidate.company}</p>
-      <p>Bio: {currentCandidate.bio}</p>
-      <div className="buttons">
-        <button onClick={() => saveCandidate(currentCandidate)}>Save</button>
-        <button onClick={fetchCandidate}>Next</button>
-      </div>
+    <div className='candadite-card'>
+      <h1>Potential Candidates</h1>
+      {currentCandidate ? (
+        <div>
+          <img src={currentCandidate.avatar_url} alt="avatar" />
+          <h2>{currentCandidate.name || "Not Provided"}</h2>
+          <p>Username: {currentCandidate.login}</p>
+          <p>Location: {currentCandidate.location || "Not provided"}</p>
+          <p>Email: {currentCandidate.email || "Not provided"}</p>
+          <p>Company: {currentCandidate.company || "Not provided"}</p>
+          <p>Bio: {currentCandidate.bio || "Not provided"}</p>
+          <div>
+            <button className='button-accept' onClick={saveCandidate}>Save</button>
+            <button className='button-reject' onClick={fetchNextCandidate}>Next</button>
+          </div>
+        </div>
+      ) : (
+        <p>No candidates found.</p>
+      )}
     </div>
-  </div>);
+  );
 };
 
 export default CandidateSearch;
