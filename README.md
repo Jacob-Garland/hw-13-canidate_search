@@ -4,6 +4,10 @@
 
 This is a candidate search application that calls the GitHub API and renders GitHub users to search for potential candidates.
 
+## Screenshot
+
+![Screenshot](./public/Screenshot%202025-03-06%20215050.png)
+
 ## Installation
 
 1. Clone this repository.
