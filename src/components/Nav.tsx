@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom';
 
 const Nav = () => {
   return (
-    <div>
-      <nav>
+    <div className="page-container">
+      <nav className="nav">
         <Link to="/">Home</Link>
         <Link to="/SavedCandidates">Saved Candidates</Link>
       </nav>
