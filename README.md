@@ -15,6 +15,8 @@ This is a candidate search application that calls the GitHub API and renders Git
 1. Run `npm run start` and Ctrl+Click on the localhost link in your console.
 2. Alternatively, run `npm run dev`.
 
+You can also visist my deployed version at: [Render](https://gitdev-search.onrender.com)
+
 ## Credits
 
 - eDX for providing starter code and the course to learn to how to make this work.
