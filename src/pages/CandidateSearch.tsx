@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { searchGithub, searchGithubUser } from '../api/API';
 import { Candidate } from '../interfaces/Candidate.interface';
 
@@ -6,10 +6,6 @@ const CandidateSearch = () => {
   const [currentCandidate, setCurrentCandidate] = useState<Candidate | null>(null);
   const [candidatesList, setCandidatesList] = useState<string[]>([]);
   const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    fetchCandidate();
-  }, []);
 
   const fetchCandidate = async () => {
     try {
