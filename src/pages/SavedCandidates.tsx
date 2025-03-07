@@ -7,7 +7,7 @@ const SavedCandidates = () => {
     return storedCandidates.map((candidate: Candidate, index: number) => (
       <div className="table-user-container" key={index}>
         <div className="table-user">
-          <img src={candidate?.avatar_url} className="box-image"></img>
+          <img src={candidate?.avatar_url || ''} className="box-image"></img>
         </div>
         <div className="table-user">{candidate?.name} / {candidate?.login}</div>
         <div className="table-user">{candidate?.location}</div>

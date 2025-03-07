@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { searchGithub, searchGithubUser } from '../api/API';
 import { Candidate } from '../interfaces/Candidate.interface';
 
@@ -7,39 +7,57 @@ const CandidateSearch = () => {
   const [candidatesList, setCandidatesList] = useState<string[]>([]);
   const [index, setIndex] = useState(0);
 
-  useEffect(() => {
-    fetchCandidate();
-  });
-
-  const fetchCandidate = async () => {
+  const fetchCandidates = useCallback(async () => {
     try {
       // Fetch basic candidates list (without details)
       const results = await searchGithub();
 
-      // Extract usernames and store them in the state
-      const usernames = results.map((user: { login: string }) => user.login);
-      console.log("Usernames:", usernames);
+      if (results.length === 0) {
+        console.log("No candidates found.");
+        setCurrentCandidate(null);
+        return;
+      }
+      
+      // Store the list of usernames to local storage in an array
+      const usernames = results.map((candidate: Candidate) => candidate.login);
       setCandidatesList(usernames);
 
-      // Fetch details for the first username
-      if (usernames.length > 0) {
-        fetchCandidateDetails(usernames[0]);
-      }
+      // Fetch details for the first candidate from array
+      const rando = results[Math.floor(Math.random() * results.length)];
+      const candidateData = await searchGithubUser(rando.login);
+      console.log("Fetched user data:", candidateData);
+      setCurrentCandidate({
+        name: candidateData.name || 'N/A',
+        login: candidateData.login || 'N/A',
+        avatar_url: candidateData.avatar_url || '',
+        email: candidateData.email || 'N/A',
+        location: candidateData.location || 'N/A',
+        company: candidateData.company || 'N/A',
+        bio: candidateData.bio || 'N/A'
+      })
+
     } catch (error) {
       console.error("Error fetching candidates:", error);
     }
-  };
+  }, []);
 
-  const fetchCandidateDetails = async (username: string) => {
+  const fetchCandidateDetails = useCallback(async (username: string) => {
     try {
-      const userData = await searchGithubUser(username);
-      console.log("Fetched user data:", userData);
-      setCurrentCandidate(userData || null);
+      const candidateData = await searchGithubUser(username);
+      console.log("Fetched user data:", candidateData);
+      setCurrentCandidate({
+        name: candidateData.name || 'N/A',
+        login: candidateData.login || 'N/A',
+        avatar_url: candidateData.avatar_url || '',
+        email: candidateData.email || 'N/A',
+        location: candidateData.location || 'N/A',
+        company: candidateData.company || 'N/A',
+        bio: candidateData.bio || 'N/A'
+      });
     } catch (error) {
       console.error("Error fetching candidate details:", error);
-      setCurrentCandidate(null);
     }
-  };
+  }, []);
 
   const fetchNextCandidate = () => {
     const nextIndex = index + 1;
@@ -61,22 +79,27 @@ const CandidateSearch = () => {
       } else {
         localStorage.setItem('candidates', JSON.stringify([currentCandidate]));
       }
-      fetchCandidate();
+      fetchNextCandidate();
     }
   }
+
+  useEffect(() => {
+    fetchCandidates();
+  }, [fetchCandidates]);
+
 
   return (
     <div className='candadite-card'>
       <h1>Potential Candidates</h1>
       {currentCandidate ? (
         <div>
-          <img src={currentCandidate.avatar_url} alt="avatar" />
-          <h2>{currentCandidate.name || "Not Provided"}</h2>
+          <img src={currentCandidate.avatar_url || ''} alt="avatar" />
+          <h2>{currentCandidate.name}</h2>
           <p>Username: {currentCandidate.login}</p>
-          <p>Location: {currentCandidate.location || "Not provided"}</p>
-          <p>Email: {currentCandidate.email || "Not provided"}</p>
-          <p>Company: {currentCandidate.company || "Not provided"}</p>
-          <p>Bio: {currentCandidate.bio || "Not provided"}</p>
+          <p>Location: {currentCandidate.location || ''}</p>
+          <p>Email: {currentCandidate.email || ''}</p>
+          <p>Company: {currentCandidate.company || ''}</p>
+          <p>Bio: {currentCandidate.bio || ''}</p>
           <div>
             <button className='button-accept' onClick={saveCandidate}>Save</button>
             <button className='button-reject' onClick={fetchNextCandidate}>Next</button>
